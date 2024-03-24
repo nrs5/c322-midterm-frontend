@@ -10,12 +10,58 @@
     margin-right: 5%;
   }
   
-  .quiz {
+  .new-quiz {
     width: 25%;
-    float: right;
+    height: 900px;
     padding: 15px;
     border: 1px solid yellow;
+    position: relative;
+    left: 1050px; /* Remove or adjust this */
+    bottom: 900px; /* Remove or adjust this */
+}
+
+  .quiz-title-container{
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
   }
 
-  
+  .questions-bank {
+    border: 1px solid orange;
+    width: 1000px;
+    height: 900px;
+  }
+  .card {
+    background-color: transparent;
+    width: 180px; /* Adjust the width as needed */
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+    float: left; /* Adjust positioning if needed */
+    margin-right: 5%; /* Adjust margin if needed */
+  }
+
+  .card img {
+    width: 100%;
+  }
+
+  .card-content ul {
+    list-style-type: none; /* Remove default list styles */
+    padding: 0; /* Remove default padding */
+}
+
+.card-content ul li {
+    margin-bottom: 5px; /* Adjust spacing between answer choices */
+}
+
+.card-content ul li::before {
+    content: ""; /* Add content for the bullet */
+    display: inline-block;
+    width: 10px; /* Set the width of the bullet */
+    height: 10px; /* Set the height of the bullet */
+    border-radius: 50%; /* Make the bullet round */
+    border: 1px solid black; /* Add a border to the bullet */
+    margin-right: 10px; /* Adjust spacing between bullet and text */
+}
+
+
+
 

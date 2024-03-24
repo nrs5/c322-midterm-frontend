@@ -4,8 +4,199 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link rel="stylesheet" href="make-a-quiz.css">
+  <link rel="stylesheet" href="navbar.css">
 </head>
 <body>
-  
+  <ul class="topnav">
+    <li><a  href="index.html">Home</a></li>
+    <li><a class="active" href="add-question.html">Add questions</a></li>
+    <li><a href="make-a-quiz.html">Create a quiz</a></li>
+    <li><a href="take-a-quiz.html">Take a quiz</a></li>
+    <li class="right"><a href="#about">About</a></li>
+  </ul>
+  <div id="questionsBank" class ="questions-bank">
+    <h1 style="margin-left: 10px; font-size: 30px;">Questions Bank</h1>
+    <h2 style="margin-left: 10px; margin-top: 20px; font-size: 20px;">Click on a question to add it to the quiz</h2>
+    <div id ="qbank"></div>
+  </div>
+  <div id="newQuiz" class="new-quiz">
+    <div class="quiz-title-container">
+        <h1 style="font-size: 20px;">Quiz Title:</h1>
+        <input type="text" id="quizTitleInput" placeholder="Enter quiz title">
+        <h2 id="question-count" style="font-size: 15px;">0 Questions</h2>
+    </div>
+    <button id="saveChanges" onclick="saveChangesToBackend()">Save your changes</button>
+    <button id="saveAndStartNew" style="margin-top: 10px;" onclick="saveChangesToBackend()" onclick="clearNQ()">Save this quiz and start a new one</button>
+    <h1 style="font-size: 20px;">If you want to remove a question from the quiz, you can click on the question here and it will be removed from the quiz</h1>
+    <div id="cardInQuiz"></div> 
+  </div>
 </body>
+<script>
+  let host = "https://midterm-nrs5.onrender.com";
+  let questions = [];
+  let questionCount = 0;
+  displayTheQuestions();
+
+  function incrementQuestionCount() {
+    questionCount++;
+    let newQuizDiv = document.querySelector('.new-quiz'); // Selecting the new-quiz div
+    let questionCountElement = newQuizDiv.querySelector('#question-count'); // Selecting the h2 element inside new-quiz
+
+    // Update the text content of the h2 element
+    questionCountElement.textContent = `${questionCount} Question${questionCount !== 1 ? 's' : ''}`;
+}
+
+function decrementQuestionCount() {
+    questionCount--;
+    let newQuizDiv = document.querySelector('.new-quiz'); // Selecting the new-quiz div
+    let questionCountElement = newQuizDiv.querySelector('#question-count'); // Selecting the h2 element inside new-quiz
+
+    // Update the text content of the h2 element
+    questionCountElement.textContent = `${questionCount} Question${questionCount !== 1 ? 's' : ''}`;
+}
+
+  async function getAll(){
+    let response = await fetch(host + "/questions");
+    let result = await response.json();
+    return result;
+  }
+
+  async function displayTheQuestions() {
+  if (questions.length == 0) {
+    questions = await getAll();
+  }
+
+  let qbank = document.getElementById("qbank");
+  qbank.innerHTML = "";
+
+  for (let question of questions) {
+    let div = document.createElement("div");
+    div.className = "card";
+    div.setAttribute("id", question.id); // Add question ID as a custom attribute
+    console.log(div);
+    
+
+    let choicesHtml = '';
+    for (let choice of question.choices) {
+      choicesHtml += `<li>${choice}</li>`;
+    }
+
+    let innerHtml = `
+      <div class="card-content">
+        <h2>${question.description}</h2>
+        <img src="${host}/questions/${question.id}/image" alt="Question">
+        <h3>Answer Choices:</h3>
+        <ul>
+          ${question.choices.map(choice => `<li>${choice}</li>`).join('')}
+        </ul>
+      </div>`;
+
+    div.innerHTML = innerHtml;
+    qbank.appendChild(div);
+
+    (function(question) {
+      div.addEventListener('click', function() {
+        displayQuestionInNewQuiz(question);
+        incrementQuestionCount();
+      });
+    })(question);
+  }
+}
+
+function displayQuestionInNewQuiz(question) {
+    // Create a new question element
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'card';
+    questionDiv.setAttribute("id", question.id);
+    const choicesHtml = question.choices.map(choice => `<li>${choice}</li>`).join('');
+    questionDiv.innerHTML = `
+      <div class="card-content">
+        <h2>${question.description}</h2>
+        <img src="${host}/questions/${question.id}/image" alt="Question">
+        <h3>Answer Choices:</h3>
+        <ul>${choicesHtml}</ul>
+      </div>`;
+
+      questionDiv.addEventListener('click', function() {
+      decrementQuestionCount();
+      questionDiv.parentNode.removeChild(questionDiv);
+    });
+
+    // Append the new question element to the new quiz div
+    const cardInQuiz = document.getElementById('cardInQuiz');
+    cardInQuiz.appendChild(questionDiv);
+}
+
+async function saveChangesToBackend() {
+  const quizTitle = document.getElementById('quizTitleInput').value;
+  let quizQuestionIds = Array.from(document.querySelectorAll('#cardInQuiz .card')).map(card => {
+    return card.getAttribute("id"); // Retrieve question ID from custom attribute
+  });
+  console.log(quizQuestionIds);
+
+  // Check if questionIds is empty, if so, set it to null
+  if (quizQuestionIds.length === 0) {
+    quizQuestionIds = null;
+  }
+
+  const data = {
+    title: quizTitle,
+    questionIds: quizQuestionIds
+  };
+
+  try {
+    const quizExists = await checkQuizExists(quizTitle);
+    const method = quizExists ? "PUT" : "POST";
+    const endpoint = quizExists ? `${host}/quizzes/${quizId}` : `${host}/quizzes`;
+
+    const response = await fetch(endpoint, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      alert("Changes saved successfully!");
+    } else {
+      throw new Error("Failed to save changes. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error saving changes:", error.message);
+    alert("Error saving changes: " + error.message);     
+  }
+}
+
+async function checkQuizExists(quizTitle) {
+  try {
+    // Fetch all quizzes from the backend
+    const response = await fetch(`${host}/quizzes`);
+    
+    if (response.ok) {
+      const quizzes = await response.json();
+      
+      // Iterate over the quizzes to check if any has the same title
+      for (const quiz of quizzes) {
+        if (quiz.title === quizTitle) {
+          return true; // Quiz with the same title exists
+        }
+      }
+      
+      return false; // No quiz with the same title found
+    } else {
+      console.error("Failed to fetch quizzes. Status:", response.status);
+      return false; // Return false if an error occurs
+    }
+  } catch (error) {
+    console.error("Error checking if quiz exists:", error.message);
+    return false; // Return false if an error occurs
+  }
+}
+function clearNQ() {
+    const cardInQuiz = document.getElementById('cardInQuiz');
+    cardInQuiz.innerHTML = ""; // Clear all child elements
+}
+</script>
 </html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Result</title>
+    <link rel="stylesheet" href="navbar.css">
+    <style>
+        /* Add custom CSS for styling */
+        #result {
+            font-size: 24px; /* Adjust the font size as needed */
+            text-align: center; /* Center the text */
+            margin-top: 20px; /* Add some top margin for spacing */
+        }
+    </style>
+</head>
+<body>
+    <ul class="topnav">
+        <li><a  href="index.html">Home</a></li>
+        <li><a href="add-question.html">Add questions</a></li>
+        <li><a href="make-a-quiz.html">Create a quiz</a></li>
+        <li><a href="take-a-quiz.html">Take a quiz</a></li>
+        <li class="right"><a href="#about">About</a></li>
+    </ul>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        // Retrieve score and quizId from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const score = parseInt(urlParams.get('score'));
+        const quizId = urlParams.get('quizId');
+
+        // Function to fetch the number of questions in the quiz
+        async function getNumberOfQuestions(quizId) {
+            try {
+                let response = await fetch(`https://midterm-nrs5.onrender.com/quizzes/${quizId}`);
+                let quiz = await response.json();
+                return quiz.questionIds.length;
+            } catch (error) {
+                console.error('Error fetching quiz questions:', error);
+                return 0;
+            }
+        }
+
+        // Display the result message
+        async function displayResult() {
+            const numQuestions = await getNumberOfQuestions(quizId);
+            const resultMessage = `You got a ${score} out of ${numQuestions}`;
+            document.getElementById('result').innerText = resultMessage;
+        }
+
+        // Call the displayResult function when the page loads
+        displayResult();
+    </script>
+</body>
+</html>

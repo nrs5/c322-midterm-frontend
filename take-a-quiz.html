@@ -4,8 +4,58 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link rel="stylesheet" href="navbar.css">
+  <link rel="stylesheet" href="take-a-quiz.css">
 </head>
 <body>
+  <ul class="topnav">
+    <li><a  href="index.html">Home</a></li>
+    <li><a href="add-question.html">Add questions</a></li>
+    <li><a href="make-a-quiz.html">Create a quiz</a></li>
+    <li class="active"><a href="take-a-quiz.html">Take a quiz</a></li>
+    <li class="right"><a href="#about">About</a></li>
+  </ul>
+  <h1 style="position: relative; bottom: 60px; font-size: 20px;">Here are the list of all available quizzes. Click on a quiz to start taking the quiz</h1>
+  <div class="quizzes">
+    
+  </div>
   
 </body>
+<script>
+  let host = "https://midterm-nrs5.onrender.com";
+  let quizzes = [];
+  displayTheQuizzes();
+
+  async function getAll() {
+    let response = await fetch(host + "/quizzes");
+    let result = await response.json();
+    return result;
+  }
+
+  async function displayTheQuizzes() {
+    if (quizzes.length === 0) {
+      quizzes = await getAll();
+    }
+
+    let quizzesContainer = document.querySelector('.quizzes');
+    quizzesContainer.innerHTML = ""; // Clear previous content
+
+    quizzes.forEach(quiz => {
+      let quizCard = document.createElement('div');
+      quizCard.classList.add('quiz-card');
+      quizCard.innerHTML = `
+        <h2>Quiz ID: ${quiz.id}</h2>
+        <h3>Title: ${quiz.title}</h3>
+        <p>Number of Questions: ${quiz.questionIds.length}</p>
+      `;
+
+      // Add event listener to redirect to quiz page on click
+      quizCard.addEventListener('click', () => {
+        window.location.href = `quiz.html?id=${quiz.id}`; // Pass quizId as a query parameter
+      });
+
+      quizzesContainer.appendChild(quizCard);
+    });
+  }
+</script>
 </html>

@@ -1,17 +1,82 @@
-.screen{
-    width: 40vw;
-    height: 24.7vw;
-    margin-left: 30vw;
-    margin-right: 30vw;
+.screen {
+    width: 80vw; /* Adjust width as needed */
+    height: auto; /* Adjust height as needed */
+    margin: 20px auto; /* Center the screen horizontally */
+    padding: 20px;
+    background-color: #f9f9f9; /* Background color for the screen */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Drop shadow */
 }
 
+/* Question cards */
+.cards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card {
+    width: 100%;
+    max-width: 600px; /* Maximum width for the question card */
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #fff; /* Background color for the card */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Drop shadow */
+}
+
+.card h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #333; /* Text color */
+}
+
+.card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #666; /* Text color */
+}
+
+.card img {
+    width: 100%;
+    max-width: 100%; /* Ensure the image fits within the card */
+    margin-bottom: 10px;
+}
+
+.card ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.card ul li {
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #444; /* Text color */
+}
+
+/* Controls for navigating between questions */
 .controls {
     display: flex;
     justify-content: space-between;
+    margin-top: 20px;
 }
 
+.controls button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff; /* Button color */
+    color: #fff; /* Text color */
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.controls button:hover {
+    background-color: #0056b3; /* Button color on hover */
+}
+
+/* Hide class */
 .hide {
-    visibility: hidden;
-    display: none;
+    display: none !important; /* Ensure the element is hidden */
 }
-

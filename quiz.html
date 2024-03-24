@@ -3,9 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Quiz Display</title>
+  <link rel="stylesheet" href="quiz.css">
+  <link rel="stylesheet" href="cards.css">
 </head>
 <body>
+  <div class="screen">
+    <div id="questionContainer" class="cards">
+      <!-- Question cards will be displayed here -->
+    </div>
+    <div class="controls">
+      <button id="prevButton" class="hide" onclick="prevQuestion()">Previous</button>
+      <button id="nextButton" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
   
+  <script>
+    let currentQuestionIndex = 0;
+    let questions = [];
+    let score = 0; // Variable to track the score
+    let host = "https://midterm-nrs5.onrender.com"; // Change this to your actual host URL
+
+    // Function to retrieve the quizId from the URL
+    function getQuizIdFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('id');
+    }
+
+    async function getQuestionsForQuiz(quizId) {
+      try {
+        let response = await fetch(`${host}/quizzes/${quizId}`);
+        let quiz = await response.json();
+        questions = [];
+        for (const questionId of quiz.questionIds) {
+          response = await fetch(`${host}/questions/${questionId}`);
+          let question = await response.json();
+          questions.push(question);
+        }
+        displayQuestion(currentQuestionIndex);
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+      }
+    }
+
+    function displayQuestion(index) {
+      let question = questions[index];
+      let questionContainer = document.getElementById("questionContainer");
+      questionContainer.innerHTML = `
+        <div class="card">
+          <h2>Question ${index + 1}</h2>
+          <h3>${question.description}</h3>
+          <img src="${host}/questions/${question.id}/image" alt="Question Image">
+          <ul class="answer-choices">
+            ${question.choices.map((choice, i) => `
+              <li>
+                <input type="radio" name="answer" value="${choice}" onchange="updateSelectedAnswer(this)">
+                <label>${choice}</label>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+
+      // Hide or show the previous button based on current question index
+      let prevButton = document.getElementById("prevButton");
+      if (index === 0) {
+        prevButton.classList.add("hide");
+      } else {
+        prevButton.classList.remove("hide");
+      }
+
+      // Hide or show the next button based on current question index
+      let nextButton = document.getElementById("nextButton");
+      if (index === questions.length - 1) {
+        nextButton.textContent = "Show Score";
+      } else {
+        nextButton.textContent = "Next";
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        displayQuestion(currentQuestionIndex);
+      }
+    }
+
+    function nextQuestion() {
+      let question = questions[currentQuestionIndex];
+      let selectedAnswer = document.querySelector('input[name="answer"]:checked');
+      if (selectedAnswer) {
+        if (selectedAnswer.value === question.answer) {
+          // Increment score if the selected answer is correct
+          score++;
+        }
+      }
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        displayQuestion(currentQuestionIndex);
+      } else {
+        // Redirect to answer.html with the score and quizId as query parameters
+        const queryParams = new URLSearchParams();
+        queryParams.append('score', score);
+        queryParams.append('quizId', getQuizIdFromUrl());
+        window.location.href = `answer.html?${queryParams.toString()}`;
+      }
+    }
+
+    // Retrieve the quizId from the URL and load questions for that quiz
+    window.onload = function() {
+      const quizId = getQuizIdFromUrl();
+      if (quizId) {
+        getQuestionsForQuiz(quizId);
+      } else {
+        alert("Quiz ID not found in URL");
+      }
+    }
+
+    function updateSelectedAnswer(input) {
+      let selectedAnswer = input.value;
+    }
+
+  </script>
 </body>
 </html>
