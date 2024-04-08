@@ -34,7 +34,7 @@
         // Function to fetch the number of questions in the quiz
         async function getNumberOfQuestions(quizId) {
             try {
-                let response = await fetch(`https://midterm-nrs5.onrender.com/quizzes/${quizId}`);
+                let response = await fetch(`https://midterm-latest-pxw6.onrender.com/quizzes/${quizId}`);
                 let quiz = await response.json();
                 return quiz.questionIds.length;
             } catch (error) {
